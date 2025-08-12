@@ -15,6 +15,7 @@ Route::get('/account/login',[AccountController::class, 'login'])->name('account.
 Route::post('/account/authenticate',[AccountController::class, 'authenticate'])->name('account.authenticate');
 Route::get('/account/profile',[AccountController::class, 'profile'])->name('account.profile');
 Route::put('/account/update-profile',[AccountController::class, 'updateProfile'])->name('account.updateProfile');
+Route::post('/account/update-profile-pic',[AccountController::class, 'updateProfilePic'])->name('account.updateProfilePic');
 
 Route::get('/account/logout',[AccountController::class, 'logout'])->name('account.logout');
 
