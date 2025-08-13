@@ -19,40 +19,116 @@
             </div>
             <div class="col-lg-9">
                 @include('front.message')
-                <div class="card border-0 shadow mb-4">
-                    <form action="" method="POST" id="userForm" name="userForm">
-                        <div class="card-body p-4">
-                            <h3 class="fs-4 mb-1">My Profile</h3>
+                <form action="" method="POST" id="createJobForm" name="createJobForm">
+                    @csrf
+                    <div class="card border-0 shadow mb-4 ">
+                        <div class="card-body card-form p-4">
+                            <h3 class="fs-4 mb-1">Job Details</h3>
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="mb-2">Title<span class="req">*</span></label>
+                                    <input type="text" placeholder="Job Title" id="title" name="title" class="form-control">
+                                    <p></p>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="mb-2">Category<span class="req">*</span></label>
+                                    <select name="category" id="category" class="form-control">
+                                        <option value="">Select a Category</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p></p>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="mb-2">Job Nature<span class="req">*</span></label>
+                                    <select name="jobType" id="jobType" class="form-select">
+                                        <option value="">Select Job Type</option>
+                                        @foreach ($jobTypes as $jobType)
+                                            <option value="{{ $jobType->id }}">{{ $jobType->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p></p>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="mb-2">Vacancy<span class="req">*</span></label>
+                                    <input type="number" min="1" placeholder="Vacancy" id="vacancy" name="vacancy" class="form-control">
+                                    <p></p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="mb-4 col-md-6">
+                                    <label class="mb-2">Salary</label>
+                                    <input type="text" placeholder="Salary" id="salary" name="salary" class="form-control">
+                                </div>
+                                <div class="mb-4 col-md-6">
+                                    <label class="mb-2">Location<span class="req">*</span></label>
+                                    <input type="text" placeholder="Job Location" id="job_location" name="job_location" class="form-control">
+                                    <p></p>
+                                </div>
+                            </div>
 
                             <div class="mb-4">
-                                <label class="mb-2">Name*</label>
-                                <input type="text" name="name" id="name" placeholder="Enter Name" class="form-control" value="{{ $user->name }}">
+                                <label class="mb-2">Description<span class="req">*</span></label>
+                                <textarea class="form-control" name="description" id="description" cols="5" rows="5" placeholder="Description"></textarea>
+                                <p></p>
+                            </div>
+                            <div class="mb-4">
+                                <label class="mb-2">Benefits</label>
+                                <textarea class="form-control" name="benefits" id="benefits" cols="5" rows="5" placeholder="Benefits"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="mb-2">Responsibility</label>
+                                <textarea class="form-control" name="responsibility" id="responsibility" cols="5" rows="5" placeholder="Responsibility"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="mb-2">Qualifications</label>
+                                <textarea class="form-control" name="qualifications" id="qualifications" cols="5" rows="5" placeholder="Qualifications"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="mb-2">Experience<span class="req">*</span></label>
+                                <select name="experience" id="experience" class="form-control">
+                                    @for ($i = 1; $i <= 10; $i++)
+                                        <option value="{{ $i }}">{{ $i }} year{{ $i > 1 ? 's' : '' }}</option>
+                                    @endfor
+                                    <option value="10_plus">10+ years</option>
+                                </select>
                                 <p></p>
                             </div>
 
                             <div class="mb-4">
-                                <label class="mb-2">Email*</label>
-                                <input type="text" name="email" id="email" placeholder="Enter Email" class="form-control" value="{{ $user->email }}">
-                                <p></p>
+                                <label class="mb-2">Keywords</label>
+                                <input type="text" placeholder="keywords" id="keywords" name="keywords" class="form-control">
+                            </div>
+
+                            <h3 class="fs-4 mb-1 mt-5 border-top pt-5">Company Details</h3>
+
+                            <div class="row">
+                                <div class="mb-4 col-md-6">
+                                    <label class="mb-2">Name<span class="req">*</span></label>
+                                    <input type="text" placeholder="Company Name" id="company_name" name="company_name" class="form-control">
+                                    <p></p>
+                                </div>
+                                <div class="mb-4 col-md-6">
+                                    <label class="mb-2">Location</label>
+                                    <input type="text" placeholder="Company Location" id="company_location" name="company_location" class="form-control">
+                                </div>
                             </div>
 
                             <div class="mb-4">
-                                <label class="mb-2">Designation</label>
-                                <input type="text" name="designation" id="designation" placeholder="Designation" class="form-control" value="{{ $user->designation }}">
-                                <p></p>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="mb-2">Mobile</label>
-                                <input type="text" name="mobile" id="mobile" placeholder="Mobile" class="form-control" value="{{ $user->mobile }}">
-                                <p></p>
+                                <label class="mb-2">Website</label>
+                                <input type="text" placeholder="Website" id="website" name="website" class="form-control">
                             </div>
                         </div>
                         <div class="card-footer p-4">
-                            <button type="submit" class="btn btn-primary">Update</button>
+                            <button type="submit" class="btn btn-primary">Save Job</button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -60,34 +136,40 @@
 @endsection
 
 @section('customJs')
-<script type="text/javascript">
-$("#userForm").submit(function(e){
+<!-- CSRF Setup -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script>
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+
+$("#createJobForm").submit(function(e){
     e.preventDefault();
 
     $.ajax({
-        url: '{{ route("account.updateProfile") }}',
-        type: 'PUT',
+        url: '{{ route("account.saveJob") }}',
+        type: 'POST',
         dataType: 'json',
-        data: $("#userForm").serializeArray(),
+        data: $("#createJobForm").serializeArray(),
         success: function(response) {
             if(response.status === true) {
-                $("#name").removeClass('is-invalid').siblings('p').removeClass('invalid-feedback').html('');
-                $("#email").removeClass('is-invalid').siblings('p').removeClass('invalid-feedback').html('');
-                window.location.href = "{{ route('account.profile') }}";
+                // Clear error states
+                ['title', 'category', 'jobType', 'vacancy', 'job_location', 'description', 'company_name'].forEach(function(field) {
+                    $("#" + field).removeClass('is-invalid')
+                        .siblings('p').removeClass('invalid-feedback').html('');
+                });
+
+                window.location.href = "{{ route('account.myJobs') }}";
             } else {
                 var errors = response.errors;
 
-                if (errors.name) {
-                    $("#name").addClass('is-invalid').siblings('p').addClass('invalid-feedback').html(errors.name);
-                } else {
-                    $("#name").removeClass('is-invalid').siblings('p').removeClass('invalid-feedback').html('');
-                }
-
-                if (errors.email) {
-                    $("#email").addClass('is-invalid').siblings('p').addClass('invalid-feedback').html(errors.email);
-                } else {
-                    $("#email").removeClass('is-invalid').siblings('p').removeClass('invalid-feedback').html('');
-                }
+                // Show errors per field
+                $.each(errors, function(field, message) {
+                    $("#" + field).addClass('is-invalid')
+                        .siblings('p').addClass('invalid-feedback').html(message);
+                });
             }
         }
     });
