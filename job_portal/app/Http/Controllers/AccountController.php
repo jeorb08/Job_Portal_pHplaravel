@@ -158,6 +158,9 @@ class AccountController extends Controller
         }
 
     }
+    public function createJob(){
+        return view('front.account.Job.create');
+    }
     public function logout(){
         Auth::logout();
         return redirect()->route('account.login');
