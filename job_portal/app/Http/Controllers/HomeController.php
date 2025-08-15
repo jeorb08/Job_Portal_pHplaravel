@@ -3,13 +3,37 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Category;
+use App\Models\Job;
+
 
 class HomeController extends Controller
 {
     //this method will show homapage
     public function index(){
+         $categories = Category::where('status',1)->orderBy('name','ASC')->take(8)->get();
+        $newCategories = Category::where('status',1)->orderBy('name','ASC')->get();
 
-        return view('front.home');
+        $featuredJobs = Job::where('status',1)
+                        ->orderBy('created_at','DESC')
+                        ->with('jobType')
+                        ->where('isFeatured',1)->take(5)->get();
+
+        $latestJobs = Job::where('status',1)
+                        ->with('jobType')
+                        ->orderBy('created_at','DESC')
+                        ->take(5)->get();
+
+
+
+        return view('front.home',[
+            'categories' => $categories,
+            'featuredJobs' => $featuredJobs,
+            'latestJobs' => $latestJobs,
+            'newCategories' => $newCategories
+        ]);
+
+        
     }
     
 }

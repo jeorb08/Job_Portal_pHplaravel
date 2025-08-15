@@ -3,6 +3,8 @@
 use App\Http\Controllers\AccountController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JobsController;
+
 
 //Route::get('/', function () {
 //    return view('welcome');
@@ -25,3 +27,4 @@ Route::post('/account/delete-job',[AccountController::class, 'deleteJob'])->name
 
 Route::get('/account/logout',[AccountController::class, 'logout'])->name('account.logout');
 
+Route::get('/jobs',[JobsController::class, 'index'])->name('jobs');
