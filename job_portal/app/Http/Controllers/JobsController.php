@@ -29,10 +29,13 @@ class JobsController extends Controller
                 abort(404);
         }
 
-        return view('front.jobDetail',[
-            'job'=>$job
-        ]);
+        $applications = JobApplication::where('job_id',$id)->with('user')->get();
 
+
+        return view('front.jobDetail',[ 'job' => $job,
+                                        
+                                        'applications' => $applications
+                                    ]);
 
     }
    
