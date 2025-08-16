@@ -28,3 +28,5 @@ Route::post('/account/delete-job',[AccountController::class, 'deleteJob'])->name
 Route::get('/account/logout',[AccountController::class, 'logout'])->name('account.logout');
 
 Route::get('/jobs',[JobsController::class, 'index'])->name('jobs');
+Route::get('/jobs/detail/{id}',[JobsController::class, 'detail'])->name('jobDetail');
+Route::post('/apply-job',[JobsController::class, 'applyJob'])->name('applyJob');
