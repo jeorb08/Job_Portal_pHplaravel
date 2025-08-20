@@ -9,7 +9,7 @@ use App\Models\Job;
 
 class HomeController extends Controller
 {
-    //this method will show homapage
+    
     public function index(){
          $categories = Category::where('status',1)->orderBy('name','ASC')->take(8)->get();
         $newCategories = Category::where('status',1)->orderBy('name','ASC')->get();

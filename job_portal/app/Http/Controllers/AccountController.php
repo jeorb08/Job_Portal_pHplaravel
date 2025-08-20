@@ -62,10 +62,12 @@ class AccountController extends Controller
 
         ]);
         if ($validator->passes()) {
-            if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            if (Auth::attempt(['email' => $request->email, 
+            'password' => $request->password])) {
                 return redirect()->route('account.profile');
             } else {
-                return redirect()->route('account.login')->with('error','Either Email/Password is incorrect');
+                return redirect()->route('account.login')
+                ->with('error','Either Email/Password is incorrect');
             }
             
             
@@ -131,8 +133,6 @@ class AccountController extends Controller
             $imageName = $id.'-'.time().'.'.$ext;
             $image->move(public_path('/profile_pic/'), $imageName);
 
-
-            // Create a small thumbnail
             $sourcePath = public_path('/profile_pic/'.$imageName);
             $manager = new ImageManager(Driver::class);
             $image = $manager->read($sourcePath);
@@ -141,7 +141,7 @@ class AccountController extends Controller
             $image->cover(150, 150);
             $image->toPng()->save(public_path('/profile_pic/thumb/'.$imageName));
 
-            // Delete Old Profile Pic
+            
             File::delete(public_path('/profile_pic/thumb/'.Auth::user()->image));
             File::delete(public_path('/profile_pic/'.Auth::user()->image));
 
@@ -163,8 +163,10 @@ class AccountController extends Controller
 
     }
     public function createJob(){
-        $categories = Category::orderBy('name','ASC')->where('status',1)->get();
-        $jobTypes = JobType::orderBy('name','ASC')->where('status',1)->get();
+        $categories = Category::orderBy('name','ASC')
+        ->where('status',1)->get();
+        $jobTypes = JobType::orderBy('name','ASC')
+        ->where('status',1)->get();
 
         return view('front.account.Job.create',[
             'categories'=> $categories,
@@ -226,7 +228,8 @@ class AccountController extends Controller
         }
     }
     public function myJobs() {    
-        $jobs = Job::where('user_id',Auth::user()->id)->with('jobType')
+        $jobs = Job::where('user_id',Auth::user()
+        ->id)->with('jobType')
 
                     ->orderBy('created_at','DESC')->paginate(10);        
         return view('front.account.job.my-jobs',[
