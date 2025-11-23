@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
+use App\Services\CaesarCipherService;
+
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+         $this->app->singleton(CaesarCipherService::class, function ($app) {
+        return new CaesarCipherService();
+    });
     }
 
     /**

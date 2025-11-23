@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CaesarCipherService; 
 use App\Models\Category;
 use App\Models\JobType;
 use App\Models\Job;
@@ -9,90 +10,120 @@ use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 
-
-
 class AccountController extends Controller
 {
-    public function registration(){
-        return view('front.account.registration');
+    protected $caesarCipher;
 
+    // Inject the CaesarCipherService into the controller
+    public function __construct(CaesarCipherService $caesarCipher)
+    {
+        $this->caesarCipher = $caesarCipher;
     }
-    public function processRegistration(Request $request){
-        $validator= Validator::make($request->all(),[
-            'name'=> 'required',
-             'email'=> 'required|email|unique:users,email',
-             'password'=> 'required|min:5|same:confirm_password',
-             'confirm_password'=> 'required', 
+
+    // Registration view
+    public function registration()
+    {
+        return view('front.account.registration');
+    }
+
+    // Process Registration with Caesar Cipher encryption (without Hash::make())
+    public function processRegistration(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:5|same:confirm_password',
+            'confirm_password' => 'required',
         ]);
-    if($validator->passes()){
-        $user = new User();
+
+        if ($validator->passes()) {
+            // Encrypt password using Caesar Cipher (without hashing)
+            $encryptedPassword = $this->caesarCipher->encrypt($request->password);
+
+            // Create new user and store the encrypted password directly (no bcrypt hashing)
+            $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
-            $user->password = Hash::make($request->password);
+            $user->password = $encryptedPassword;  // Store the encrypted password directly
             $user->save();
 
-            session()->flash('success','You have registerd successfully.');
-        return response()->json([
+            session()->flash('success', 'You have registered successfully.');
+
+            return response()->json([
                 'status' => true,
                 'errors' => []
-        ]);  
-
-    }else{
-        return response()->json([
-            'status'=> false,
-            'errors'=>$validator->errors()
-        ]);
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
     }
-    }
 
-    public function login(){
-        
+    // Login view
+    public function login()
+    {
         return view('front.account.login');
     }
-    public function authenticate(Request $request){
-        $validator= Validator::make($request->all(),[
-            'email' => 'required|email',
-            'password'=> 'required',
 
+    // Authenticate login with Caesar Cipher decryption (no Hash::check)
+    public function authenticate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
         ]);
+
         if ($validator->passes()) {
-            if (Auth::attempt(['email' => $request->email, 
-            'password' => $request->password])) {
-                return redirect()->route('account.profile');
+            // Get the user by email
+            $user = User::where('email', $request->email)->first();
+
+            // Check if user exists and decrypt the password
+            if ($user) {
+                // Decrypt the stored password and compare it to the input password
+                $decryptedPassword = $this->caesarCipher->decrypt($user->password);
+
+                // If decrypted password matches the input password, login the user
+                if ($decryptedPassword === $request->password) {
+                    Auth::login($user);
+                    return redirect()->route('account.profile');
+                } else {
+                    return redirect()->route('account.login')
+                        ->with('error', 'Either Email/Password is incorrect');
+                }
             } else {
                 return redirect()->route('account.login')
-                ->with('error','Either Email/Password is incorrect');
+                    ->with('error', 'User not found');
             }
-            
-            
         } else {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput($request->only('email'));
         }
-
     }
-    public function profile(){
-        
-        $id = Auth::user()->id;
 
+    // Profile page
+    public function profile()
+    {
+        $id = Auth::user()->id;
         $user = User::find($id);
-        return view('front.account.profile',[
-            'user'=> $user
-        ]);
+        return view('front.account.profile', ['user' => $user]);
     }
-    public function updateProfile(Request $request){
+
+    // Update profile details
+    public function updateProfile(Request $request)
+    {
         $id = Auth::user()->id;
 
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'name' => 'required|min:5|max:20',
-            'email' => 'required|email|unique:users,email,'.$id.',id'
+            'email' => 'required|email|unique:users,email,' . $id . ',id'
         ]);
 
         if ($validator->passes()) {
@@ -103,64 +134,64 @@ class AccountController extends Controller
             $user->designation = $request->designation;
             $user->save();
 
-            session()->flash('success','Profile updated successfully.');
+            session()->flash('success', 'Profile updated successfully.');
 
             return response()->json([
                 'status' => true,
                 'errors' => []
             ]);
-
-        }else {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ]);
-        }
-           
-    }
-
-    public function updateProfilePic(Request $request){
-         $id = Auth::user()->id;
-
-        $validator = Validator::make($request->all(),[
-            'image' => 'required|image'
-        ]);
-
-        if ($validator->passes()) {
-
-            $image = $request->image;
-            $ext = $image->getClientOriginalExtension();
-            $imageName = $id.'-'.time().'.'.$ext;
-            $image->move(public_path('/profile_pic/'), $imageName);
-
-            $sourcePath = public_path('/profile_pic/'.$imageName);
-            $manager = new ImageManager(Driver::class);
-            $image = $manager->read($sourcePath);
-
-            // crop the best fitting 5:3 (600x360) ratio and resize to 600x360 pixel
-            $image->cover(150, 150);
-            $image->toPng()->save(public_path('/profile_pic/thumb/'.$imageName));
-
-            
-            File::delete(public_path('/profile_pic/thumb/'.Auth::user()->image));
-            File::delete(public_path('/profile_pic/'.Auth::user()->image));
-
-            User::where('id',$id)->update(['image' => $imageName]);
-
-            session()->flash('success','Profile picture updated successfully.');
-
-            return response()->json([
-                'status' => true,
-                'errors' => []
-            ]);
-
         } else {
             return response()->json([
                 'status' => false,
                 'errors' => $validator->errors()
             ]);
         }
+    }
 
+    // Profile picture update
+    public function updateProfilePic(Request $request)
+    {
+        $id = Auth::user()->id;
+
+        $validator = Validator::make($request->all(), [
+            'image' => 'required|image'
+        ]);
+
+        if ($validator->passes()) {
+            $image = $request->image;
+            $ext = $image->getClientOriginalExtension();
+            $imageName = $id . '-' . time() . '.' . $ext;
+            $image->move(public_path('/profile_pic/'), $imageName);
+
+            $sourcePath = public_path('/profile_pic/' . $imageName);
+            $manager = new ImageManager(Driver::class);
+            $image = $manager->read($sourcePath);
+
+            // Resize image to 150x150
+            $image->resize(150, 150);
+            $image->save(public_path('/profile_pic/thumb/' . $imageName));
+
+            // Remove old images
+            if (Auth::user()->image) {
+                File::delete(public_path('/profile_pic/thumb/' . Auth::user()->image));
+                File::delete(public_path('/profile_pic/' . Auth::user()->image));
+            }
+
+            // Update the image field in the database
+            User::where('id', $id)->update(['image' => $imageName]);
+
+            session()->flash('success', 'Profile picture updated successfully.');
+
+            return response()->json([
+                'status' => true,
+                'errors' => []
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ]);
+        }
     }
     public function createJob(){
         $categories = Category::orderBy('name','ASC')
@@ -336,3 +367,5 @@ class AccountController extends Controller
         return redirect()->route('account.login');
     }
 }
+
+    
